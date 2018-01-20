@@ -12,6 +12,8 @@
 		F16043332011F9DF00394F71 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F16043312011F9DF00394F71 /* Main.storyboard */; };
 		F16043352011F9DF00394F71 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F16043342011F9DF00394F71 /* Assets.xcassets */; };
 		F16043382011F9DF00394F71 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F16043362011F9DF00394F71 /* LaunchScreen.storyboard */; };
+		F16043402011FA0300394F71 /* READY!!.MP4 in Resources */ = {isa = PBXBuildFile; fileRef = F160433F2011FA0300394F71 /* READY!!.MP4 */; };
+		F160436620132BA500394F71 /* BitmapBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F160436520132BA500394F71 /* BitmapBuffer.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,6 +24,8 @@
 		F16043342011F9DF00394F71 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F16043372011F9DF00394F71 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		F16043392011F9DF00394F71 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F160433F2011FA0300394F71 /* READY!!.MP4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = "READY!!.MP4"; sourceTree = "<group>"; };
+		F160436520132BA500394F71 /* BitmapBuffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BitmapBuffer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,8 +58,10 @@
 		F160432C2011F9DF00394F71 /* scoreGenerator */ = {
 			isa = PBXGroup;
 			children = (
+				F160433F2011FA0300394F71 /* READY!!.MP4 */,
 				F160432D2011F9DF00394F71 /* AppDelegate.swift */,
 				F160432F2011F9DF00394F71 /* ViewController.swift */,
+				F160436520132BA500394F71 /* BitmapBuffer.swift */,
 				F16043312011F9DF00394F71 /* Main.storyboard */,
 				F16043342011F9DF00394F71 /* Assets.xcassets */,
 				F16043362011F9DF00394F71 /* LaunchScreen.storyboard */,
@@ -124,6 +130,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F16043382011F9DF00394F71 /* LaunchScreen.storyboard in Resources */,
+				F16043402011FA0300394F71 /* READY!!.MP4 in Resources */,
 				F16043352011F9DF00394F71 /* Assets.xcassets in Resources */,
 				F16043332011F9DF00394F71 /* Main.storyboard in Resources */,
 			);
@@ -137,6 +144,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F16043302011F9DF00394F71 /* ViewController.swift in Sources */,
+				F160436620132BA500394F71 /* BitmapBuffer.swift in Sources */,
 				F160432E2011F9DF00394F71 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
