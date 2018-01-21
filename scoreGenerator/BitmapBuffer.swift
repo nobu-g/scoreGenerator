@@ -16,11 +16,7 @@ class BitmapBuffer {
     private let bytesPerRow: Int
     private let bytesPerPixel = 4
     
-    init?(uiImage: UIImage) {
-        guard
-            //CGImageが取得できること
-            let cgImage = uiImage.cgImage
-            else {return nil}
+    init(cgImage: CGImage) {
         //自分が望む形式でCGContextを作成する
         width = cgImage.width
         height = cgImage.height
@@ -40,7 +36,15 @@ class BitmapBuffer {
         }
     }
     
-    func getColor(x: Int, y: Int) -> UIColor {
+//    convenience init?(uiImage: UIImage) {
+//        if let cgImage = uiImage.cgImage {
+//            self.init(cgImage: cgImage)
+//        } else {
+//            return nil
+//        }
+//    }
+    
+    private func getColor(x: Int, y: Int) -> UIColor {
         let pixelInfo = bytesPerRow * y + x * bytesPerPixel
         let r = CGFloat(pixelData[pixelInfo]) / CGFloat(255.0)
         let g = CGFloat(pixelData[pixelInfo+1]) / CGFloat(255.0)
@@ -50,7 +54,7 @@ class BitmapBuffer {
         return UIColor(red: r, green: g, blue: b, alpha: a)
     }
     
-    subscript (x: Int, y: Int) -> UIColor {
-        return getColor(x: x, y: y)
+    subscript (x: Int) -> UIColor {
+        return getColor(x: width - Analyzer.judgeLineY, y: x)
     }
 }
