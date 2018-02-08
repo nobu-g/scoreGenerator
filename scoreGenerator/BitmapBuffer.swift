@@ -9,6 +9,7 @@
 import Foundation
 import UIKit
 
+// 画像からRGB値を抽出する
 class BitmapBuffer {
     private var pixelData: Data
     let width: Int
@@ -54,7 +55,60 @@ class BitmapBuffer {
         return UIColor(red: r, green: g, blue: b, alpha: a)
     }
     
-    subscript (x: Int) -> UIColor {
-        return getColor(x: width - Analyzer.judgeLineY, y: x)
+    subscript (x: Int) -> RGB {
+        return RGB(uiColor: getColor(x: width - judgeLineY, y: x))
     }
 }
+
+// RGB値を扱うクラス
+class RGB {
+    let red: Int
+    let green: Int
+    let blue: Int
+    var hasChroma: Bool {       // 有彩色かどうか
+        return max(red, green, blue) - min(red, green, blue) > 40
+    }
+    var isAchromatic: Bool {    // 無彩色かどうか
+        return max(red, green, blue) - min(red, green, blue) < 20
+    }
+    var major: Int {
+        return max(red, green, blue)
+    }
+    var tuple: (Int, Int, Int) {    // デバッグ用
+        return (red, green, blue)
+    }
+
+    init(R red: Int, G green: Int, B blue: Int) {
+        self.red   = red
+        self.green = green
+        self.blue  = blue
+    }
+    init(R red: Double, G green: Double, B blue: Double) {
+        self.red   = Int(red.rounded())
+        self.green = Int(green.rounded())
+        self.blue  = Int(blue.rounded())
+    }
+    init(uiColor: UIColor) {
+        let components = uiColor.cgColor.components!
+        self.red   = Int(components[0] * 255)
+        self.green = Int(components[1] * 255)
+        self.blue  = Int(components[2] * 255)
+    }
+    
+    static func + (rgb1: RGB, rgb2: RGB) -> RGB {
+        return RGB(R: rgb1.red + rgb2.red, G: rgb1.green + rgb2.green, B: rgb1.blue + rgb2.blue)
+    }
+    static func / (rgb: RGB, d: Int) -> RGB {
+        return RGB(R: Double(rgb.red) / Double(d), G: Double(rgb.green) / Double(d), B: Double(rgb.blue) / Double(d))
+    }
+}
+
+
+
+
+
+
+
+
+
+

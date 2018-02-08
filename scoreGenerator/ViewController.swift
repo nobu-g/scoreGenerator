@@ -27,6 +27,8 @@ class ViewController: UIViewController/*, UIGestureRecognizerDelegate*/ {
         guard interval < duration else {
             // 解析終了
             analyzer.finish()
+            timer.invalidate()
+            print("解析終了")
             return
         }
         
@@ -45,8 +47,8 @@ class ViewController: UIViewController/*, UIGestureRecognizerDelegate*/ {
         UIGraphicsBeginImageContextWithOptions(view.bounds.size, false, 1.0)
         // パスの初期化
         let drawPath = UIBezierPath()
-        drawPath.move(to: CGPoint(x: 130, y: Analyzer.judgeLineY))
-        drawPath.addLine(to: CGPoint(x: 568, y: Analyzer.judgeLineY))
+        drawPath.move(to: CGPoint(x: 99, y: judgeLineY))
+        drawPath.addLine(to: CGPoint(x: 568, y: judgeLineY))
         // 線の色
         UIColor.yellow.setStroke()
         // 線幅
@@ -74,7 +76,7 @@ class ViewController: UIViewController/*, UIGestureRecognizerDelegate*/ {
 //
 //        self.view.addGestureRecognizer(tapGesture)
         // パスからassetを生成.
-        let path = Bundle.main.path(forResource: "READY!!", ofType: "mp4")
+        let path = Bundle.main.path(forResource: "test", ofType: "MOV")
         let fileURL = URL(fileURLWithPath: path!)
         let avAsset = AVURLAsset(url: fileURL, options: nil)
         
@@ -99,13 +101,11 @@ class ViewController: UIViewController/*, UIGestureRecognizerDelegate*/ {
             // 画面に表示する
             view.addSubview(drawView)
         }
-        
-
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(true)
-        timer = Timer.scheduledTimer(timeInterval: 1/2, target: self, selector: #selector(self.update), userInfo: nil, repeats: true)
+        timer = Timer.scheduledTimer(timeInterval: 1/20, target: self, selector: #selector(self.update), userInfo: nil, repeats: true)
     }
     
     override func viewWillDisappear(_ animated: Bool) {
