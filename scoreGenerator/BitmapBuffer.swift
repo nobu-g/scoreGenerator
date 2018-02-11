@@ -66,13 +66,13 @@ class RGB {
     let green: Int
     let blue: Int
     var hasChroma: Bool {       // 有彩色かどうか
-        return max(red, green, blue) - min(red, green, blue) > 40
-    }
-    var isAchromatic: Bool {    // 無彩色かどうか
-        return max(red, green, blue) - min(red, green, blue) < 20
+        return max(red, green, blue) - min(red, green, blue) > 50
     }
     var major: Int {
         return max(red, green, blue)
+    }
+    var minor: Int {
+        return min(red, green, blue)
     }
     var tuple: (Int, Int, Int) {    // デバッグ用
         return (red, green, blue)

@@ -13,7 +13,7 @@ fileprivate let sideMargin = 99             // 両端判定円から画面端ま
 fileprivate let circlePitch = 81.6          // 判定円の間隔
 fileprivate let diameter = 61               // 判定円の直径
 fileprivate let radius = 30                 // 判定円の半径
-fileprivate let bpm = 178.0                 // 解析譜面のBPM
+fileprivate let bpm = 174.0                 // 解析譜面のBPM
 
 private var notes = [Note]()                // 解析結果を格納
 
@@ -37,7 +37,7 @@ class Analyzer {
     private var longSample2: LongSample?
     
     
-    func update(_ pixel: BitmapBuffer, _ frame: Int) {//print(frame, terminator: ":")
+    func update(_ pixel: BitmapBuffer, _ frame: Int) {
         
         var lanesToSearch = [0, 1, 2, 3, 4, 5]  // 単ノーツを探索するべきレーン(ロングがある場合削られる)
         
@@ -59,12 +59,12 @@ class Analyzer {
             switch status[lane] {
             case .idle:
                 // ノーツ断面が見つかった時
-                if let cut = CutEnd(pixel, from: leftEdgeOfCircle, to: leftEdgeOfCircle + diameter, frame) { //print(cut.color.tuple)  // 判定円の左端から中心まで走査
-                    detectingBuf[lane].append(cut)
+                if let cut = CutEnd(pixel, from: leftEdgeOfCircle, to: leftEdgeOfCircle + diameter, frame) {  // 判定円の左端から中心まで走査
+					detectingBuf[lane].append(cut)
                     status[lane] = .detecting
                 }
             case .detecting:
-                if let cut = CutEnd(pixel, from: leftEdgeOfCircle, to: leftEdgeOfCircle + diameter, frame) { //print(cut.color.tuple) // 判定円の左端から中心まで走査
+                if let cut = CutEnd(pixel, from: leftEdgeOfCircle, to: leftEdgeOfCircle + diameter, frame) { // 判定円の左端から中心まで走査
                     if detectingBuf[lane].last!.isTap && cut.isFootOfLong {   // タップノーツ検出中に単ノーツ以外の色(ロング根元色)が検出された場合
                         if !cut.isJoint {
                             // 単ノーツの後にはロングノーツが続いていた
@@ -134,30 +134,32 @@ class Analyzer {
         }
         cutSets.append(cuts[startIndex...].map { $0 } )
         
-        let noteRadius = 31.5
-//        let noteRadiusLarge = 45.0
+        let noteRadius = 16.0
+//        let noteRadiusLarge = 22.5
         var notes = [Note]()
         // 各セットからノーツを構成
         for cutSet in cutSets {
-            guard !cutSet.isEmpty else {
-                return [Note]()
+            guard !cutSet.filter ({ $0.width >= 5 }).isEmpty else {
+                return [Note]()     // cutが小さすぎる場合はノイズ扱い
             }
             
             // フリックノーツかどうか
-            let isFlick = !cutSet.first!.isTap
+            let isFlick = !cutSet[cutSet.count / 2].isTap
             // 大ノーツかどうか
             var isLarge = (Double(cutSet.map { $0.width }.max()!) > noteRadius * 2) && !isFlick
             if !isLarge && !isFlick {       // 大ノーツ見過ごしを防ぐ
                 for cut in cutSet {
-                    if cut.isJoint {
+                    if cut.isPartOfLarge {
                         isLarge = true
+                        
                     }
                 }
             }
             
             let frame = cutSet.sorted(by: { $0.width > $1.width }).first!.frame
-            notes.append(Note(beat: Double(frame) / 3600 * bpm, lane: lane, flick: isFlick, large: isLarge));print(frame/60)
-
+            notes.append(Note(beat: Double(frame) / 3600 * bpm, lane: lane, flick: isFlick, large: isLarge))
+            //if notes.last!.isLarge { print("Large") }
+            
 //            if cutSet.count == 1 {
 //                notes.append(Note(beat: Double(cutSet.first!.frame) / 3600 * bpm, lane: lane, flick: isFlick, large: isLarge))
 //            } else {
@@ -183,29 +185,35 @@ class Analyzer {
     
     // 解析終了時の処理(ファイル書き出しなど)
     func finish() {
-        let offset = 4.0    // 音楽と譜面のずれを補正(拍指定)
+        let offset = 36.25    // 音楽と譜面のずれを補正(拍指定)
         
-        // middle刈り
+        // middle間引き
         for note in notes {
-            if var next0 = note.next {
-                while next0.next != nil {
-                    let next1 = next0.next!
-                    if note.lane == next0.lane {
-                        if next0.lane == next1.lane {
-                            note.next = next1
+            var root = note
+            var note0 = note
+            if var note1 = note0.next {
+                while note1.next != nil {
+                    let note2 = note1.next!
+                    if note0.lane == note1.lane {
+                        if note1.lane == note2.lane {
+                            root.next = note2
+                        } else {
+                            root = root.next!
                         }
                     } else {
-                        if next1.lane == next0.lane * 2 - note.lane {
-                            // beat条件
-                            if abs(next1.beat - (next0.beat * 2 - note.beat)) <= 1 {
-                                note.next = next1
-                            }
+                        if note2.lane == note1.lane * 2 - note0.lane
+                        && abs(note2.beat - (note1.beat * 2 - note0.beat)) <= 1 {
+                                root.next = note2
+                        } else {
+                            root = root.next!
                         }
                     }
-                    next0 = next1
+                    note0 = note1
+                    note1 = note2
                 }
             }
         }
+        
         // offset加算
         for note in notes {
             note.beat += offset
@@ -215,6 +223,7 @@ class Analyzer {
                 following.beat += offset
             }
         }
+        
         // 1/4拍刻みにノーツを整列させる
         var adjust = 0.0
         var minError = 1000.0
@@ -234,70 +243,6 @@ class Analyzer {
             while(following.next != nil) {
                 following = following.next!
                 following.beat = ((following.beat + adjust) * 4).rounded(.toNearestOrEven) / 4
-            }
-        }
-        
-        
-        /* bmsファイルへ書き出し */
-        var bmsData =
-        """
-        
-        *---------------------- HEADER FIELD
-        
-        #BPM \(bpm)
-        
-        
-        #LNTYPE 1
-        
-        #WAV01 タップ.mp3
-        #WAV02 フリック.mp3
-        #WAV03 始め１.mp3
-        #WAV04 途中１.mp3
-        #WAV05 離し１.mp3
-        #WAV06 フリック離し１.mp3
-        #WAV07 始め２.mp3
-        #WAV08 途中２.mp3
-        #WAV09 離し２.mp3
-        #WAV0A フリック離し２.mp3
-        #WAV10 SAKURAスキップ.mp3
-        
-        
-        *---------------------- MAIN DATA FIELD
-        
-        
-        """
-        
-        // 必要な小節数を求める
-        var beat1 = 0.0
-        var beat2 = 0.0
-        var beat3 = 0.0
-        for note in notes.reversed() {
-            if note.next != nil {
-                var end = note.next!
-                while end.next != nil { end = end.next! }
-                if beat1 == 0.0 {
-                    beat1 = end.beat
-                } else if beat2 == 0.0 {
-                    beat2 = end.beat
-                    if beat3 > 0.0 { break }
-                }
-            } else {
-                if beat3 == 0.0 {
-                    beat3 = note.beat
-                    if beat1 > 0.0 && beat2 > 0.0 { break }
-                }
-            }
-        }
-        let barNum = Int(max(beat1, beat2, beat3) / 4) + 1
-        
-        // notesをbeat毎に配列の要素に仕分け
-        var barGroup = [[Note]](repeating: [Note](), count: barNum)
-        for note in notes {
-            barGroup[Int(note.beat / 4)].append(note)
-            var following = note
-            while(following.next != nil) {
-                following = following.next!
-                barGroup[Int(following.beat / 4)].append(following)
             }
         }
         
@@ -337,6 +282,76 @@ class Analyzer {
             }
         }
 
+        /* bmsファイルへ書き出し */
+        var bmsData =
+        """
+        
+        *---------------------- HEADER FIELD
+        
+        #PLAYER 1
+        #GENRE アニメ
+        #TITLE READY!!
+        #ARTIST 765PRO ALLSTARS
+        #BPM \(bpm)
+        #PLAYLEVEL
+        #RANK 3
+        
+        
+        #LNTYPE 1
+        
+        #WAV01 タップ.mp3
+        #WAV02 フリック.mp3
+        #WAV03 始め１.mp3
+        #WAV04 途中１.mp3
+        #WAV05 離し１.mp3
+        #WAV06 フリック離し１.mp3
+        #WAV07 始め２.mp3
+        #WAV08 途中２.mp3
+        #WAV09 離し２.mp3
+        #WAV0A フリック離し２.mp3
+        #WAV10 SAKURAスキップ.mp3
+        
+        
+        *---------------------- MAIN DATA FIELD
+        
+        
+        #00001:0000000000100000000000000000000000000000000000000000000000000000
+        """
+        
+        // 必要な小節数を求める
+        var beat1 = 0.0
+        var beat2 = 0.0
+        var beat3 = 0.0
+        for note in notes.reversed() {
+            if note.next != nil {
+                var end = note.next!
+                while end.next != nil { end = end.next! }
+                if beat1 == 0.0 {
+                    beat1 = end.beat
+                } else if beat2 == 0.0 {
+                    beat2 = end.beat
+                    if beat3 > 0.0 { break }
+                }
+            } else {
+                if beat3 == 0.0 {
+                    beat3 = note.beat
+                    if beat1 > 0.0 && beat2 > 0.0 { break }
+                }
+            }
+        }
+        let barNum = Int(max(beat1, beat2, beat3) / 4) + 1
+        
+        // notesをbeat毎に配列の要素に仕分け
+        var barGroup = [[Note]](repeating: [Note](), count: barNum)
+        for note in notes {
+            barGroup[Int(note.beat / 4)].append(note)
+            var following = note
+            while(following.next != nil) {
+                following = following.next!
+                barGroup[Int(following.beat / 4)].append(following)
+            }
+        }
+ 
         // 各要素でレーンごとに分け、書き出していく
         let channelMap = [11, 12, 13, 15, 18, 19]       // レーンとチャンネルの対応付け
         for (bar, group) in barGroup.enumerated() {
@@ -383,10 +398,10 @@ class Analyzer {
                             }
                         }
                     }
-                    bmsData += "\r\n"
+                    bmsData += "\n"
                }
             }
-            bmsData += "\r\n"
+            bmsData += "\n"
         }
         
         print(bmsData)
@@ -415,8 +430,18 @@ class CutEnd {
 
     // タップノーツかフリックか色で判断(タップならtrue)
     var isTap: Bool {
+        if color.major != color.red {
+            return false
+        }
         // 60はタップの赤と右フリックの黄のR-Gの閾値
-        return color.major == color.red && (color.red - color.green > 60)
+        if color.red - color.green > 60 {
+            return true
+        // タップの赤に上記の場合の例外が見つかったので修正
+        } else if color.red - color.green > 40 && color.blue > 170 {
+            return true
+        }
+        
+        return false
     }
     // 両端どちらかの色が単ノーツではなくロングノーツ(初期)かどうか
     var isFootOfLong: Bool {
@@ -424,9 +449,19 @@ class CutEnd {
     }
     // 単ノーツとロングノーツの接続点かどうか
     var isJoint: Bool {
-        // 有彩色無彩色有彩色のパターンがあればtrue
+        // 有彩色・黒・有彩色のパターンがあればtrue
         for posX in leftEnd...rightEnd {
-            if pixel[posX].isAchromatic {
+            if pixel[posX].major <= 40 {
+                return true
+            }
+        }
+        return false
+    }
+    // 大ノーツの一部かどうか
+    var isPartOfLarge: Bool {
+        // 有彩色・白・有彩色のパターンがあればtrue
+        for posX in leftEnd...rightEnd {
+            if pixel[posX].minor >= 215 {
                 return true
             }
         }
@@ -475,7 +510,7 @@ class CutEnd {
     private func isFootOfLong(color: RGB) -> Bool {
         // Gが最大かつRとBの和が300より大きいか、Bが最大かつGとBの差が15より小さければロングノーツ
         return (color.major == color.green && color.red  + color.blue  > 300)
-            || (color.major == color.blue  && color.blue - color.green < 15)
+            || (color.major == color.blue  && color.blue - color.green < 20)
     }
 }
 
@@ -486,7 +521,7 @@ class LongSample {
 //    private var leftEnd0: Int               // 2つ前のサンプルの左端座標
     private var preLeftEnd: Int             // 1つ前のサンプルの左端座標
     private var preWidth = 0                // 1つ前のサンプルの幅
-    private var preLane: Int?               // ロングノーツが乗っていたレーン
+    private var preLane: Int                // ロングノーツが乗っていたレーン
     private var hasRegistered = true        // middleノーツを登録し終えたかどうか
     private var preDistance = -1.0          // 1つ前のサンプルの判定円中心との距離(hasRegisteredがfalseの時のみ有効)
     private var isPreStill = false          // 前回とサンプル位置が変わらないか
@@ -507,7 +542,7 @@ class LongSample {
         let end   = (preLeftEnd >= 15) ? preLeftEnd + preWidth + 15 : sideMargin + Int(circlePitch * Double(parent.lane)) + diameter + 15
         if let cut = CutEnd(pixel, from: start, to: end, frame) {
             // 終端判定、フラグ更新
-            if (preWidth > 0 && abs(cut.width - preWidth) > 10) || cut.isJoint {
+            if (preWidth > 0 && abs(cut.width - preWidth) > 9) || cut.isJoint {
                 isTerminal = true
             }
             
@@ -526,9 +561,9 @@ class LongSample {
             var nowLane: Int?
             for lane in 0...5 {
                 let center = Double(sideMargin + radius) + circlePitch * Double(lane)
-                let posX = Double(cut.leftEnd) + Double(preWidth) / 2
+                let posX = Double(cut.leftEnd) + Double(cut.width) / 2
                 let distance = abs(posX - center)
-                if distance < 8 {
+                if distance < 8 {       // 8はロング最大移動量15の半分(判定円を通過すれば必ずdetectされるように)
                     nowLane = lane
                     break
                 }
@@ -537,21 +572,22 @@ class LongSample {
             // スライド移動した場合
             if nowLane != nil && nowLane != preLane {
                 hasRegistered = false
+                preLane = nowLane!
             }
             if !hasRegistered {
                 var distance = 8.0
                 if nowLane != nil {
                     let center = Double(sideMargin + radius) + circlePitch * Double(nowLane!)
-                    let posX = Double(cut.leftEnd) + Double(preWidth) / 2
+                    let posX = Double(cut.leftEnd) + Double(cut.width) / 2
                     distance = abs(posX - center)
                 }
                 // 未登録状態で、初めてじゃないとき
                 if hasRegistered == false && preDistance >= 0 {
                     if distance >= preDistance {
                         // middle生成
-                        parent.next = Note(beat: (Double(frame) - 0.5) / 3600 * bpm, lane: preLane!)
+                        parent.next = Note(beat: (Double(frame) - 0.5) / 3600 * bpm, lane: preLane)
                         parent = parent.next!
-                        print("\(preLane!): ミドル")
+                        print("\(preLane): ミドル")
                         hasRegistered = true
                         distance = -1.0
                     }
@@ -579,7 +615,6 @@ class LongSample {
             }
             
             isPreStill = isStill
-            preLane = nowLane
             preLeftEnd = cut.leftEnd
             preWidth = cut.width
         } else {                // ノーツ断面が見つからなかった時

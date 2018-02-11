@@ -42,27 +42,27 @@ class ViewController: UIViewController/*, UIGestureRecognizerDelegate*/ {
         self.frame += 1
     }
 
-    func drawLine() -> UIImage? {
-        // イメージ処理の開始
-        UIGraphicsBeginImageContextWithOptions(view.bounds.size, false, 1.0)
-        // パスの初期化
-        let drawPath = UIBezierPath()
-        drawPath.move(to: CGPoint(x: 99, y: judgeLineY))
-        drawPath.addLine(to: CGPoint(x: 568, y: judgeLineY))
-        // 線の色
-        UIColor.yellow.setStroke()
-        // 線幅
-        drawPath.lineWidth = 1.0
-        // 線を描く
-        drawPath.stroke()
-
-        // イメージコンテキストから UIImage を作る
-        let image = UIGraphicsGetImageFromCurrentImageContext()
-        // イメージ処理の終了
-        UIGraphicsEndImageContext()
-
-        return image
-    }
+//    func drawLine() -> UIImage? {
+//        // イメージ処理の開始
+//        UIGraphicsBeginImageContextWithOptions(view.bounds.size, false, 1.0)
+//        // パスの初期化
+//        let drawPath = UIBezierPath()
+//        drawPath.move(to: CGPoint(x: 99, y: judgeLineY))
+//        drawPath.addLine(to: CGPoint(x: 568, y: judgeLineY))
+//        // 線の色
+//        UIColor.yellow.setStroke()
+//        // 線幅
+//        drawPath.lineWidth = 1.0
+//        // 線を描く
+//        drawPath.stroke()
+//
+//        // イメージコンテキストから UIImage を作る
+//        let image = UIGraphicsGetImageFromCurrentImageContext()
+//        // イメージ処理の終了
+//        UIGraphicsEndImageContext()
+//
+//        return image
+//    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -76,7 +76,7 @@ class ViewController: UIViewController/*, UIGestureRecognizerDelegate*/ {
 //
 //        self.view.addGestureRecognizer(tapGesture)
         // パスからassetを生成.
-        let path = Bundle.main.path(forResource: "test", ofType: "MOV")
+        let path = Bundle.main.path(forResource: "READY!!", ofType: "MOV")
         let fileURL = URL(fileURLWithPath: path!)
         let avAsset = AVURLAsset(url: fileURL, options: nil)
         
@@ -94,18 +94,18 @@ class ViewController: UIViewController/*, UIGestureRecognizerDelegate*/ {
         self.view.addSubview(imageView)
   
         
-        // 線を引く
-        if let drawImage = drawLine() {
-            // イメージビューに設定する
-            let drawView = UIImageView(image: drawImage)
-            // 画面に表示する
-            view.addSubview(drawView)
-        }
+//        // 線を引く
+//        if let drawImage = drawLine() {
+//            // イメージビューに設定する
+//            let drawView = UIImageView(image: drawImage)
+//            // 画面に表示する
+//            view.addSubview(drawView)
+//        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(true)
-        timer = Timer.scheduledTimer(timeInterval: 1/20, target: self, selector: #selector(self.update), userInfo: nil, repeats: true)
+        timer = Timer.scheduledTimer(timeInterval: 1/60, target: self, selector: #selector(self.update), userInfo: nil, repeats: true)
     }
     
     override func viewWillDisappear(_ animated: Bool) {
