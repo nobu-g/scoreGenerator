@@ -13,7 +13,10 @@ fileprivate let sideMargin = 99             // 両端判定円から画面端ま
 fileprivate let circlePitch = 81.6          // 判定円の間隔
 fileprivate let diameter = 61               // 判定円の直径
 fileprivate let radius = 30                 // 判定円の半径
-fileprivate let bpm = 174.0                 // 解析譜面のBPM
+fileprivate let bpm = 177.0                 // 解析譜面のBPM
+let musicName = ""          				// 解析する曲名
+fileprivate let artist = ""					// アーティスト名
+fileprivate let offset = 5.25               // 音楽と譜面のずれを補正(拍指定)
 
 private var notes = [Note]()                // 解析結果を格納
 
@@ -28,7 +31,7 @@ extension Array {
 class Analyzer {
     
     enum Status {
-        case idle, detecting
+        case idle, detecting, mayLongStart
     }
 
     private var status = [Status](repeating: .idle, count: 6)               // 単ノーツ検出中か(レーン毎にある)
@@ -63,7 +66,7 @@ class Analyzer {
 					detectingBuf[lane].append(cut)
                     status[lane] = .detecting
                 }
-            case .detecting:
+            case .detecting, .mayLongStart:
                 if let cut = CutEnd(pixel, from: leftEdgeOfCircle, to: leftEdgeOfCircle + diameter, frame) { // 判定円の左端から中心まで走査
                     if detectingBuf[lane].last!.isTap && cut.isFootOfLong {   // タップノーツ検出中に単ノーツ以外の色(ロング根元色)が検出された場合
                         if !cut.isJoint {
@@ -90,11 +93,15 @@ class Analyzer {
                         detectingBuf[lane].append(cut)
                     }
                 } else {
-                    // 単ノーツ検出終了
-                    notes.append(Analyzer.constructNote(from: detectingBuf[lane], lane: lane))
-                    print("\(lane): 単ノーツ")
-                    detectingBuf[lane].removeAll()
-                    status[lane] = .idle
+                    if status[lane] == .detecting {
+                        status[lane] = .mayLongStart
+                    } else {
+                        // 単ノーツ検出終了
+                        notes.append(Analyzer.constructNote(from: detectingBuf[lane], lane: lane))
+                        print("\(lane): 単ノーツ")
+                        detectingBuf[lane].removeAll()
+                        status[lane] = .idle
+                    }
                 }
             }
         }
@@ -185,8 +192,6 @@ class Analyzer {
     
     // 解析終了時の処理(ファイル書き出しなど)
     func finish() {
-        let offset = 36.25    // 音楽と譜面のずれを補正(拍指定)
-        
         // middle間引き
         for note in notes {
             var root = note
@@ -194,20 +199,27 @@ class Analyzer {
             if var note1 = note0.next {
                 while note1.next != nil {
                     let note2 = note1.next!
-                    if note0.lane == note1.lane {
-                        if note1.lane == note2.lane {
-                            root.next = note2
-                        } else {
-                            root = root.next!
-                        }
+                    let ratio = (note2.beat - note0.beat) / (note1.beat - note0.beat)
+                    let expectedPos = note0.lanePos + (note1.lanePos - note0.lanePos) * ratio
+                    if (abs(note2.lanePos - expectedPos) < 10) || (note0.lane == note1.lane && note1.lane == note2.lane) {
+                        root.next = note2
                     } else {
-                        if note2.lane == note1.lane * 2 - note0.lane
-                        && abs(note2.beat - (note1.beat * 2 - note0.beat)) <= 1 {
-                                root.next = note2
-                        } else {
-                            root = root.next!
-                        }
+                        root = root.next!
                     }
+//                    if note0.lane == note1.lane {
+//                        if note1.lane == note2.lane {
+//                            root.next = note2
+//                        } else {
+//                            root = root.next!
+//                        }
+//                    } else {
+//                        if note2.lane == note1.lane * 2 - note0.lane
+//                        && abs(note2.beat - (note1.beat * 2 - note0.beat)) <= 1 {
+//                                root.next = note2
+//                        } else {
+//                            root = root.next!
+//                        }
+//                    }
                     note0 = note1
                     note1 = note2
                 }
@@ -290,8 +302,8 @@ class Analyzer {
         
         #PLAYER 1
         #GENRE アニメ
-        #TITLE READY!!
-        #ARTIST 765PRO ALLSTARS
+        #TITLE \(musicName)
+        #ARTIST \(artist)
         #BPM \(bpm)
         #PLAYLEVEL
         #RANK 3
@@ -309,13 +321,14 @@ class Analyzer {
         #WAV08 途中２.mp3
         #WAV09 離し２.mp3
         #WAV0A フリック離し２.mp3
-        #WAV10 SAKURAスキップ.mp3
+        #WAV10 \(musicName).mp3
         
         
         *---------------------- MAIN DATA FIELD
         
         
-        #00001:0000000000100000000000000000000000000000000000000000000000000000
+        #00001:0000000000000000000010000000000000000000000000000000000000000000
+        
         """
         
         // 必要な小節数を求める
@@ -408,7 +421,7 @@ class Analyzer {
         
         if let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
             
-            let path_file_name = dir.appendingPathComponent("READY!!.bms")
+            let path_file_name = dir.appendingPathComponent(musicName + ".bms")
             do {
                 try bmsData.write( to: path_file_name, atomically: false, encoding: String.Encoding.shiftJIS )
             } catch let error as NSError {
@@ -552,7 +565,7 @@ class LongSample {
                 // middle生成
                 let middlePos = Double(preLeftEnd) + Double(preWidth) / 2
                 let lane = Int(((middlePos - Double(sideMargin + radius)) / circlePitch).rounded())
-                parent.next = Note(beat: (Double(frame) - 0.5) / 3600 * bpm, lane: lane)
+                parent.next = Note(beat: (Double(frame) - 0.5) / 3600 * bpm, lane: lane, pos: middlePos)
                 parent = parent.next!
                 print("\(lane): ミドル")
             }
@@ -585,7 +598,8 @@ class LongSample {
                 if hasRegistered == false && preDistance >= 0 {
                     if distance >= preDistance {
                         // middle生成
-                        parent.next = Note(beat: (Double(frame) - 0.5) / 3600 * bpm, lane: preLane)
+                        let middlePos = Double(preLeftEnd) + Double(preWidth) / 2
+                        parent.next = Note(beat: (Double(frame) - 0.5) / 3600 * bpm, lane: preLane, pos: middlePos)
                         parent = parent.next!
                         print("\(preLane): ミドル")
                         hasRegistered = true
@@ -668,11 +682,17 @@ class Note {
     let isFlick: Bool
     let isLarge: Bool
     var type = NoteType.single  // Analyzer.finish()関数で使う
+	let lanePos: Double         // middle間引きで使う
     
-    init(beat: Double, lane: Int, flick isFlick: Bool = false, large isLarge: Bool = false) {
+    init(beat: Double, lane: Int, flick isFlick: Bool = false, large isLarge: Bool = false, pos: Double) {
         self.beat = beat
         self.lane = lane
         self.isFlick = isFlick
         self.isLarge = isLarge
+        self.lanePos = pos
+    }
+    convenience init(beat: Double, lane: Int, flick isFlick: Bool = false, large isLarge: Bool = false) {
+        let lanePos = Double(sideMargin + radius) + circlePitch * Double(lane)
+        self.init(beat: beat, lane: lane, flick: isFlick, large: isLarge, pos: lanePos)
     }
 }

@@ -23,7 +23,7 @@ class ViewController: UIViewController/*, UIGestureRecognizerDelegate*/ {
     // 毎フレーム呼ばれる
     @objc func update(tm: Timer) {
         
-        let interval = CMTimeMake(Int64(self.frame), 60)
+        let interval = CMTimeMakeWithSeconds(Float64(frame) / 60, Int32(NSEC_PER_SEC))
         guard interval < duration else {
             // 解析終了
             analyzer.finish()
@@ -33,12 +33,19 @@ class ViewController: UIViewController/*, UIGestureRecognizerDelegate*/ {
         }
         
         // 動画の指定した時間での画像を得る
-        let capturedImage = try! self.generator.copyCGImage(at: interval, actualTime: nil)
-        self.imageView.image = UIImage(cgImage: capturedImage, scale: 1.0, orientation: UIImageOrientation.left)
+		do {
+            let capturedImage = try self.generator.copyCGImage(at: interval, actualTime: nil)
+			
+            self.imageView.image = UIImage(cgImage: capturedImage, scale: 1.0, orientation: UIImageOrientation.left)
         
-        // 画像を解析
-        analyzer.update(BitmapBuffer(cgImage: capturedImage), frame)
-        
+            // 画像を解析
+            analyzer.update(BitmapBuffer(cgImage: capturedImage), frame)
+            
+        } catch let error {
+            print(error)
+            exit(1)
+        }
+
         self.frame += 1
     }
 
@@ -76,7 +83,7 @@ class ViewController: UIViewController/*, UIGestureRecognizerDelegate*/ {
 //
 //        self.view.addGestureRecognizer(tapGesture)
         // パスからassetを生成.
-        let path = Bundle.main.path(forResource: "READY!!", ofType: "MOV")
+        let path = Bundle.main.path(forResource: musicName, ofType: "MP4")
         let fileURL = URL(fileURLWithPath: path!)
         let avAsset = AVURLAsset(url: fileURL, options: nil)
         
