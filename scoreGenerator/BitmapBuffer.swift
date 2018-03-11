@@ -56,7 +56,11 @@ class BitmapBuffer {
     }
     
     subscript (x: Int) -> RGB {
-        return RGB(uiColor: getColor(x: width - judgeLineY, y: x))
+        if width > height {
+            return RGB(uiColor: getColor(x: x, y: judgeLineY))
+        } else {
+            return RGB(uiColor: getColor(x: width - judgeLineY, y: x))
+        }
     }
 }
 

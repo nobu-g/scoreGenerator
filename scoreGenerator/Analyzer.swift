@@ -14,9 +14,9 @@ fileprivate let circlePitch = 81.6          // 判定円の間隔
 fileprivate let diameter = 61               // 判定円の直径
 fileprivate let radius = 30                 // 判定円の半径
 fileprivate let bpm = 177.0                 // 解析譜面のBPM
-let musicName = ""          				// 解析する曲名
-fileprivate let artist = ""					// アーティスト名
-fileprivate let offset = 5.25               // 音楽と譜面のずれを補正(拍指定)
+let musicName = "Brand New Theater!"                 // 解析する曲名
+fileprivate let artist = "765 MILLION STARS"                 // アーティスト名
+fileprivate let offset = 0.0                // 音楽と譜面のずれを補正(拍指定)
 
 private var notes = [Note]()                // 解析結果を格納
 
@@ -63,7 +63,7 @@ class Analyzer {
             case .idle:
                 // ノーツ断面が見つかった時
                 if let cut = CutEnd(pixel, from: leftEdgeOfCircle, to: leftEdgeOfCircle + diameter, frame) {  // 判定円の左端から中心まで走査
-					detectingBuf[lane].append(cut)
+                    detectingBuf[lane].append(cut)
                     status[lane] = .detecting
                 }
             case .detecting, .mayLongStart:
@@ -206,20 +206,6 @@ class Analyzer {
                     } else {
                         root = root.next!
                     }
-//                    if note0.lane == note1.lane {
-//                        if note1.lane == note2.lane {
-//                            root.next = note2
-//                        } else {
-//                            root = root.next!
-//                        }
-//                    } else {
-//                        if note2.lane == note1.lane * 2 - note0.lane
-//                        && abs(note2.beat - (note1.beat * 2 - note0.beat)) <= 1 {
-//                                root.next = note2
-//                        } else {
-//                            root = root.next!
-//                        }
-//                    }
                     note0 = note1
                     note1 = note2
                 }
@@ -395,19 +381,19 @@ class Analyzer {
                         } else {
                             switch ob!.type {
                             case .single:
-                                bmsData += ob!.isFlick ? "02" : "01"
+                                bmsData += ob!.isFlick ? "02" : (ob!.isLarge ? "0B" : "01")
                             case .start1:
-                                bmsData += "03"
+                                bmsData += ob!.isLarge ? "0C" : "03"
                             case .middle1:
                                 bmsData += "04"
                             case .end1:
-                                bmsData += ob!.isFlick ? "06" : "05"
+                                bmsData += ob!.isFlick ? "06" : (ob!.isLarge ? "0D" : "05")
                             case .start2:
-                                bmsData += "07"
+                                bmsData += ob!.isLarge ? "0E" : "07"
                             case .middle2:
                                 bmsData += "08"
                             case .end2:
-                                bmsData += ob!.isFlick ? "0A" : "09"
+                                bmsData += ob!.isFlick ? "0A" : (ob!.isLarge ? "0F" : "09")
                             }
                         }
                     }
@@ -522,7 +508,7 @@ class CutEnd {
     // 色が単ノーツではなくロングノーツ(初期)かどうか
     private func isFootOfLong(color: RGB) -> Bool {
         // Gが最大かつRとBの和が300より大きいか、Bが最大かつGとBの差が15より小さければロングノーツ
-        return (color.major == color.green && color.red  + color.blue  > 300)
+        return (color.major == color.green && color.red  + color.blue  > 350)
             || (color.major == color.blue  && color.blue - color.green < 20)
     }
 }
@@ -555,7 +541,7 @@ class LongSample {
         let end   = (preLeftEnd >= 15) ? preLeftEnd + preWidth + 15 : sideMargin + Int(circlePitch * Double(parent.lane)) + diameter + 15
         if let cut = CutEnd(pixel, from: start, to: end, frame) {
             // 終端判定、フラグ更新
-            if (preWidth > 0 && abs(cut.width - preWidth) > 9) || cut.isJoint {
+            if (preWidth > 0 && abs(cut.width - preWidth) > 8) || cut.isJoint {
                 isTerminal = true
             }
             

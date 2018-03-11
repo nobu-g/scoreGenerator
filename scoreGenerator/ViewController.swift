@@ -17,7 +17,8 @@ class ViewController: UIViewController/*, UIGestureRecognizerDelegate*/ {
     var generator: AVAssetImageGenerator!   // assetから画像をキャプチャーする為のジュネレーター
     var imageView = UIImageView()           // 静止画用のImageView
     let analyzer = Analyzer()               // 動画からキャプチャした画像のアナライザ
-    var timer: Timer!
+    var timer: Timer!                       // 一定時間毎に処理を行うためのタイマー
+    var isTurned = false                    // 動画が縦向きかどうか(iPhoneでの録画ならtrue)
    
     
     // 毎フレーム呼ばれる
@@ -36,8 +37,12 @@ class ViewController: UIViewController/*, UIGestureRecognizerDelegate*/ {
 		do {
             let capturedImage = try self.generator.copyCGImage(at: interval, actualTime: nil)
 			
-            self.imageView.image = UIImage(cgImage: capturedImage, scale: 1.0, orientation: UIImageOrientation.left)
-        
+            if isTurned {
+                self.imageView.image = UIImage(cgImage: capturedImage, scale: 1.0, orientation: UIImageOrientation.left)
+            } else {
+                self.imageView.image = UIImage(cgImage: capturedImage)
+
+            }
             // 画像を解析
             analyzer.update(BitmapBuffer(cgImage: capturedImage), frame)
             
@@ -83,7 +88,7 @@ class ViewController: UIViewController/*, UIGestureRecognizerDelegate*/ {
 //
 //        self.view.addGestureRecognizer(tapGesture)
         // パスからassetを生成.
-        let path = Bundle.main.path(forResource: musicName, ofType: "MP4")
+        let path = Bundle.main.path(forResource: musicName, ofType: "mov")
         let fileURL = URL(fileURLWithPath: path!)
         let avAsset = AVURLAsset(url: fileURL, options: nil)
         
@@ -91,7 +96,13 @@ class ViewController: UIViewController/*, UIGestureRecognizerDelegate*/ {
         
         // assetから画像をキャプチャーする為のジュネレーターを生成.
         generator = AVAssetImageGenerator(asset: avAsset)
-        generator.maximumSize = CGSize(width: self.view.frame.size.height, height: self.view.frame.width)
+        let track = avAsset.tracks.first!
+        if track.naturalSize.width >= track.naturalSize.height {
+            generator.maximumSize = self.view.frame.size            // PCにミラーリングして録画した動画など
+        } else {
+            generator.maximumSize = CGSize(width: self.view.frame.size.height, height: self.view.frame.width)   // iPhoneで録画した動画など
+            self.isTurned = true
+        }
         generator.requestedTimeToleranceAfter = kCMTimeZero
         generator.requestedTimeToleranceBefore = kCMTimeZero
     
