@@ -307,6 +307,11 @@ class Analyzer {
         #WAV08 途中２.mp3
         #WAV09 離し２.mp3
         #WAV0A フリック離し２.mp3
+        #WAV0B タップ大.mp3
+        #WAV0C 始め１.mp3
+        #WAV0D 離し1.mp3
+        #WAV0E 始め2.mp3
+        #WAV0F 離し2.mp3
         #WAV10 \(musicName).mp3
         
         
@@ -340,7 +345,7 @@ class Analyzer {
         }
         let barNum = Int(max(beat1, beat2, beat3) / 4) + 1
         
-        // notesをbeat毎に配列の要素に仕分け
+        // notesを小節毎に配列の要素に仕分け
         var barGroup = [[Note]](repeating: [Note](), count: barNum)
         for note in notes {
             barGroup[Int(note.beat / 4)].append(note)
