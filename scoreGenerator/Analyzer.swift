@@ -308,10 +308,10 @@ class Analyzer {
         #WAV09 離し２.mp3
         #WAV0A フリック離し２.mp3
         #WAV0B タップ大.mp3
-        #WAV0C 始め１.mp3
-        #WAV0D 離し1.mp3
-        #WAV0E 始め2.mp3
-        #WAV0F 離し2.mp3
+        #WAV0C 始め１大.mp3
+        #WAV0D 離し１大.mp3
+        #WAV0E 始め２大.mp3
+        #WAV0F 離し２大.mp3
         #WAV10 \(musicName).mp3
         
         
