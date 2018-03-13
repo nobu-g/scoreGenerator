@@ -312,6 +312,7 @@ class Analyzer {
         #WAV0D 離し１大.mp3
         #WAV0E 始め２大.mp3
         #WAV0F 離し２大.mp3
+        #WAV0G タップ特大.mp3
         #WAV10 \(musicName).mp3
         
         
