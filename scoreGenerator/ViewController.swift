@@ -45,6 +45,8 @@ class ViewController: UIViewController/*, UIGestureRecognizerDelegate*/ {
             }
             // 画像を解析
             analyzer.update(BitmapBuffer(cgImage: capturedImage), frame)
+            // 進捗報告
+            if frame % 600 == 0 { print("\(frame/60)秒経過"); }
             
         } catch let error {
             print(error)

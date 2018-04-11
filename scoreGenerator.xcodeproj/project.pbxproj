@@ -14,11 +14,8 @@
 		F16043382011F9DF00394F71 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F16043362011F9DF00394F71 /* LaunchScreen.storyboard */; };
 		F160436620132BA500394F71 /* BitmapBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F160436520132BA500394F71 /* BitmapBuffer.swift */; };
 		F160436A2013999100394F71 /* Analyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16043692013999100394F71 /* Analyzer.swift */; };
-		F19BFD2F203053D20098D9E1 /* 自分REST@RT.MOV in Resources */ = {isa = PBXBuildFile; fileRef = F19BFD2E203053D20098D9E1 /* 自分REST@RT.MOV */; };
+		F1849B95207DC01000D5BB1B /* 待ち受けプリンス.mov in Resources */ = {isa = PBXBuildFile; fileRef = F1849B94207DC01000D5BB1B /* 待ち受けプリンス.mov */; };
 		F19BFD31203141E10098D9E1 /* Thank You!.MOV in Resources */ = {isa = PBXBuildFile; fileRef = F19BFD30203141E10098D9E1 /* Thank You!.MOV */; };
-		F19BFD33203161F40098D9E1 /* Thank You!.MP4 in Resources */ = {isa = PBXBuildFile; fileRef = F19BFD32203161F40098D9E1 /* Thank You!.MP4 */; };
-		F19BFD3520329C1A0098D9E1 /* Welcome!!.mov in Resources */ = {isa = PBXBuildFile; fileRef = F19BFD3420329C190098D9E1 /* Welcome!!.mov */; };
-		F19BFD3B203315440098D9E1 /* Brand New Theater!.mov in Resources */ = {isa = PBXBuildFile; fileRef = F19BFD3A203315440098D9E1 /* Brand New Theater!.mov */; };
 		F1DA546A202CB75D00B5CA76 /* READY!!.MOV in Resources */ = {isa = PBXBuildFile; fileRef = F1DA5469202CB75D00B5CA76 /* READY!!.MOV */; };
 		F1F8F04220271E63002D867F /* FairyTaleじゃいられない.MOV in Resources */ = {isa = PBXBuildFile; fileRef = F1F8F04120271E63002D867F /* FairyTaleじゃいられない.MOV */; };
 /* End PBXBuildFile section */
@@ -33,11 +30,8 @@
 		F16043392011F9DF00394F71 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		F160436520132BA500394F71 /* BitmapBuffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BitmapBuffer.swift; sourceTree = "<group>"; };
 		F16043692013999100394F71 /* Analyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Analyzer.swift; sourceTree = "<group>"; };
-		F19BFD2E203053D20098D9E1 /* 自分REST@RT.MOV */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = "自分REST@RT.MOV"; sourceTree = "<group>"; };
+		F1849B94207DC01000D5BB1B /* 待ち受けプリンス.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = "待ち受けプリンス.mov"; sourceTree = "<group>"; };
 		F19BFD30203141E10098D9E1 /* Thank You!.MOV */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = "Thank You!.MOV"; sourceTree = "<group>"; };
-		F19BFD32203161F40098D9E1 /* Thank You!.MP4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Thank You!.MP4"; sourceTree = "<group>"; };
-		F19BFD3420329C190098D9E1 /* Welcome!!.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = "Welcome!!.mov"; sourceTree = "<group>"; };
-		F19BFD3A203315440098D9E1 /* Brand New Theater!.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = "Brand New Theater!.mov"; sourceTree = "<group>"; };
 		F1DA5469202CB75D00B5CA76 /* READY!!.MOV */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = "READY!!.MOV"; sourceTree = "<group>"; };
 		F1F8F04120271E63002D867F /* FairyTaleじゃいられない.MOV */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = "FairyTaleじゃいられない.MOV"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -72,11 +66,8 @@
 		F160432C2011F9DF00394F71 /* scoreGenerator */ = {
 			isa = PBXGroup;
 			children = (
-				F19BFD3A203315440098D9E1 /* Brand New Theater!.mov */,
-				F19BFD3420329C190098D9E1 /* Welcome!!.mov */,
-				F19BFD32203161F40098D9E1 /* Thank You!.MP4 */,
+				F1849B94207DC01000D5BB1B /* 待ち受けプリンス.mov */,
 				F19BFD30203141E10098D9E1 /* Thank You!.MOV */,
-				F19BFD2E203053D20098D9E1 /* 自分REST@RT.MOV */,
 				F1DA5469202CB75D00B5CA76 /* READY!!.MOV */,
 				F1F8F04120271E63002D867F /* FairyTaleじゃいられない.MOV */,
 				F160432D2011F9DF00394F71 /* AppDelegate.swift */,
@@ -151,15 +142,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				F1F8F04220271E63002D867F /* FairyTaleじゃいられない.MOV in Resources */,
-				F19BFD3520329C1A0098D9E1 /* Welcome!!.mov in Resources */,
-				F19BFD33203161F40098D9E1 /* Thank You!.MP4 in Resources */,
 				F19BFD31203141E10098D9E1 /* Thank You!.MOV in Resources */,
 				F16043382011F9DF00394F71 /* LaunchScreen.storyboard in Resources */,
-				F19BFD3B203315440098D9E1 /* Brand New Theater!.mov in Resources */,
+				F1849B95207DC01000D5BB1B /* 待ち受けプリンス.mov in Resources */,
 				F16043352011F9DF00394F71 /* Assets.xcassets in Resources */,
 				F16043332011F9DF00394F71 /* Main.storyboard in Resources */,
 				F1DA546A202CB75D00B5CA76 /* READY!!.MOV in Resources */,
-				F19BFD2F203053D20098D9E1 /* 自分REST@RT.MOV in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

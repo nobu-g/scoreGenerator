@@ -13,20 +13,14 @@ fileprivate let sideMargin = 99             // 両端判定円から画面端ま
 fileprivate let circlePitch = 81.6          // 判定円の間隔
 fileprivate let diameter = 61               // 判定円の直径
 fileprivate let radius = 30                 // 判定円の半径
-fileprivate let bpm = 177.0                 // 解析譜面のBPM
-let musicName = "Brand New Theater!"                 // 解析する曲名
-fileprivate let artist = "765 MILLION STARS"                 // アーティスト名
+
+fileprivate let bpm = 144.0                 // 解析譜面のBPM
+let musicName = "待ち受けプリンス"                 // 解析する曲名
+fileprivate let artist = "765PRO ALLSTARS"        // アーティスト名
 fileprivate let offset = 0.0                // 音楽と譜面のずれを補正(拍指定)
 
 private var notes = [Note]()                // 解析結果を格納
 
-extension Array {
-    public mutating func append(_ newElements: [Array.Element]) {
-        for element in newElements {
-            append(element)
-        }
-    }
-}
 
 class Analyzer {
     
@@ -73,7 +67,7 @@ class Analyzer {
                             // 単ノーツの後にはロングノーツが続いていた
                             let notesBuf = Analyzer.constructNote(from: detectingBuf[lane], lane: lane)
                             detectingBuf[lane].removeAll()
-                            notes.append(notesBuf)
+                            notes.append(contentsOf: notesBuf)
                             print("\(lane): ロング開始")
                             // LongSampleのインスタンスを生成してロングノーツ観測開始
                             if !notesBuf.isEmpty {
@@ -97,7 +91,7 @@ class Analyzer {
                         status[lane] = .mayLongStart
                     } else {
                         // 単ノーツ検出終了
-                        notes.append(Analyzer.constructNote(from: detectingBuf[lane], lane: lane))
+                        notes.append(contentsOf: Analyzer.constructNote(from: detectingBuf[lane], lane: lane))
                         print("\(lane): 単ノーツ")
                         detectingBuf[lane].removeAll()
                         status[lane] = .idle
@@ -158,7 +152,6 @@ class Analyzer {
                 for cut in cutSet {
                     if cut.isPartOfLarge {
                         isLarge = true
-                        
                     }
                 }
             }
@@ -316,44 +309,56 @@ class Analyzer {
         #WAV10 \(musicName).mp3
         
         
+        *---------------------- EXPANSION FIELD
+        #LANE 6
+        
+        
         *---------------------- MAIN DATA FIELD
         
         
-        #00001:0000000000000000000010000000000000000000000000000000000000000000
+        #00001:000000000000000000000000000000000000000000000000000000000000010
         
         """
         
-        // 必要な小節数を求める
-        var beat1 = 0.0
-        var beat2 = 0.0
-        var beat3 = 0.0
-        for note in notes.reversed() {
-            if note.next != nil {
-                var end = note.next!
-                while end.next != nil { end = end.next! }
-                if beat1 == 0.0 {
-                    beat1 = end.beat
-                } else if beat2 == 0.0 {
-                    beat2 = end.beat
-                    if beat3 > 0.0 { break }
-                }
-            } else {
-                if beat3 == 0.0 {
-                    beat3 = note.beat
-                    if beat1 > 0.0 && beat2 > 0.0 { break }
-                }
-            }
-        }
-        let barNum = Int(max(beat1, beat2, beat3) / 4) + 1
+//        // 必要な小節数を求める
+//        var beat1 = 0.0
+//        var beat2 = 0.0
+//        var beat3 = 0.0
+//        for note in notes.reversed() {
+//            if note.next != nil {
+//                var end = note.next!
+//                while end.next != nil { end = end.next! }
+//                if beat1 == 0.0 {
+//                    beat1 = end.beat
+//                } else if beat2 == 0.0 {
+//                    beat2 = end.beat
+//                    if beat3 > 0.0 { break }
+//                }
+//            } else {
+//                if beat3 == 0.0 {
+//                    beat3 = note.beat
+//                    if beat1 > 0.0 && beat2 > 0.0 { break }
+//                }
+//            }
+//        }
+//        let barNum = Int(max(beat1, beat2, beat3) / 4) + 1
         
         // notesを小節毎に配列の要素に仕分け
-        var barGroup = [[Note]](repeating: [Note](), count: barNum)
+        var barGroup = [[Note]]()
         for note in notes {
-            barGroup[Int(note.beat / 4)].append(note)
+            let bar = Int(note.beat / 4)
+            if bar > barGroup.count - 1 {
+                barGroup.append(contentsOf: [[Note]](repeating: [Note](), count: bar - (barGroup.count - 1)))
+            }
+            barGroup[bar].append(note)
             var following = note
             while(following.next != nil) {
                 following = following.next!
-                barGroup[Int(following.beat / 4)].append(following)
+                let bar = Int(following.beat / 4)
+                if bar > barGroup.count - 1 {
+                    barGroup.append(contentsOf: [[Note]](repeating: [Note](), count: bar - (barGroup.count - 1)))
+                }
+                barGroup[bar].append(following)
             }
         }
  
@@ -466,7 +471,7 @@ class CutEnd {
     var isPartOfLarge: Bool {
         // 有彩色・白・有彩色のパターンがあればtrue
         for posX in leftEnd...rightEnd {
-            if pixel[posX].minor >= 215 {
+            if pixel[posX].minor >= 225 {
                 return true
             }
         }
@@ -637,7 +642,7 @@ class LongSample {
                 print("終端ノーツ構成に失敗")
             } else {
                 parent.next = noteBuf.first!
-                notes.append(noteBuf.dropFirst().map { $0 } )
+                notes.append(contentsOf: noteBuf.dropFirst().map { $0 } )
                 print("\(lane): ロング終了")
             }
             
